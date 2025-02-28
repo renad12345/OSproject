@@ -2,14 +2,41 @@
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+    }
+
+    void PSJF(Queue processes){
+        //save proccess which their start time = current time in queue 'available'
+        Queue available = new Queue(processes.size);
+        int time = 0;
+
+        while (processes.size != 0){
+            int PSize = processes.size;
+
+            //to fill available queue, iterate over all processes in received queue
+            //if their start time = current time, enqueue them to 'available' queue
+            for(int i =0; i<PSize ;i++)
+                processe p = processes.dequeue();
+                if(p.arrivalTime == time)
+                    available.enqueue(p);
+            //if the process start time != current time, return them back to 'processes' queue
+                else processes.enqueue(p);
+
+            time++;
+            //if no processes available, skip this iteration and go to time+1
+            if(available.size==0)
+                continue;
+                //if there some processes available, sort them incrementally according to their burst
+            //time
+            else
+                available.sort();
+            processe leastBTprocess = available.getFront();
+            leastBTprocess.burstTime--;
+            //just when the proccess burstTime = 0, remove it from available queue
+            if(leastBTprocess.burstTime == 0)
+                available.dequeue();
+
+
         }
     }
 }
