@@ -14,7 +14,7 @@ public class Main {
             int arrivalTime = scanner.nextInt();
             System.out.print("Enter burst time for Process " + (i + 1) + ": ");
             int burstTime = scanner.nextInt();
-            Process p= new Process(i + 1, arrivalTime, burstTime);
+            Process p = new Process(i + 1, arrivalTime, burstTime);
             processes.enqueue(p);
         }
 
@@ -49,7 +49,7 @@ public class Main {
         Process last = null;
         Process leastBTprocess;
 
-//repeat until all processes done with processing
+        //repeat until all processes done with processing
         while (processes.size != 0 || available.size != 0) {
             System.out.println("still proccess in queue");
             System.out.println("current time: " + time);
@@ -63,35 +63,37 @@ public class Main {
                 Process process = processes.dequeue();
                 System.out.println(" processs checked: " + process.getID());
 
-                if (process.getArrivalTime() <= time){
+                if (process.getArrivalTime() <= time) {
                     available.enqueue(process);
                     System.out.println(" processs added to avaliable: " + process.getID());
                 }
-                    //if the process start time != current time, return them back to 'processes' queue
-                else {processes.enqueue(process);
-                    System.out.println("processs was not added to avaliable: " + process.getID());}
-
+                //if the process start time != current time, return them back to 'processes' queue
+                else {
+                    processes.enqueue(process);
+                    System.out.println("processs was not added to avaliable: " + process.getID());
                 }
 
+            }
+
             //if no processes available, skip this iteration and go to time+1
-            if (available.size == 0){
+            if (available.size == 0) {
+                time++;
                 System.out.println("no processs available");
                 continue;
             }
 
-                //if there some processes available, sort them incrementally according to their burst
-                //time
-            else {
-                available.sort();
-                System.out.println("there is processes available, sort");
-            }
+            //if there some processes available, sort them incrementally according to their burst
+            //time
 
-                 leastBTprocess = available.getFront();
+            available.sort();
+            System.out.println("there is processes available, sort");
+
+
+            leastBTprocess = available.getFront();
             System.out.println("the least burst is: " + leastBTprocess.getID() + ", its BT: " + leastBTprocess.getBurstTime());
 
             //context switch if recent process differs from previous process
-            if(last!=null && leastBTprocess!=last)
-            {
+            if (last != null && leastBTprocess.getID() != last.getID()) {
                 System.out.println("Context switch: ");
                 time++;
 
@@ -102,7 +104,7 @@ public class Main {
 
 
             //just when the process burstTime = 0, remove it from available queue
-            if (leastBTprocess.getBurstTime() == 0){
+            if (leastBTprocess.getBurstTime() == 0) {
                 System.out.println("burst time for proccess is 0, its id" + leastBTprocess.getID());
                 available.dequeue();
             }
@@ -114,7 +116,7 @@ public class Main {
 
         }
 
-        System.out.println("time: "+time);
+        System.out.println("last time: " + time);
 
     }
 
