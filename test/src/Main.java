@@ -1,4 +1,3 @@
-
 import java.util.Scanner;
 
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
@@ -40,16 +39,41 @@ public class Main {
     }
 
     public static void PSJF(Queue processes) {
+         EventScheduler scheduler = new EventScheduler(processes); //Initialize event scheduler with the queue of processes
         //save process which their start time = current time in queue 'available'
-        Queue available = new Queue(processes.size);
+        //Queue available = new Queue(processes.size);
+        Queue available = scheduler.getReadyQueue(); //Get ready queue (where processes will be placed when ready to execute)
+        EventScheduler.Event[] eventQueue = scheduler.getEventQueue(); //Get event queue(which stores processes based on arrival time)
         System.out.println("num of processs: " + processes.size);
 
         int time = 0;
 
         Process last = null;
         Process leastBTprocess;
+        int eventIndex = 0; //Track processed events
 
-        //repeat until all processes done with processing
+
+     //Skip forward in time to the first arriving process
+    if (eventQueue.length > 0 && eventQueue[0].time > 0) {
+        time = eventQueue[0].time;
+    }
+
+        while (eventIndex < eventQueue.length || available.size != 0) {
+         System.out.println("still proccess in queue");
+        System.out.println("Current time: " + time);
+
+        //Add new arriving processes to the available queue
+        while (eventIndex < eventQueue.length && eventQueue[eventIndex].time == time) {
+        Process newprocess=eventQueue[eventIndex].process; 
+        System.out.println(" processs checked: " + newprocess.getID());
+            available.enqueue(newprocess);
+            System.out.println("Process added to available: " + newprocess.getID());
+            eventIndex++;
+        }
+
+
+
+           /* //repeat until all processes done with processing
         while (processes.size != 0 || available.size != 0) {
             System.out.println("still proccess in queue");
             System.out.println("current time: " + time);
@@ -73,7 +97,7 @@ public class Main {
                     System.out.println("processs was not added to avaliable: " + process.getID());
                 }
 
-            }
+            }*/
 
             //if no processes available, skip this iteration and go to time+1
             if (available.size == 0) {
@@ -121,4 +145,3 @@ public class Main {
     }
 
 }
-
