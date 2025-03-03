@@ -1,23 +1,45 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+int numProcesses;
+do {
+    System.out.print("Enter the number of processes: ");
+    while (!scanner.hasNextInt()) {
+        System.out.println("Invalid input! Please enter a valid number.");
+        scanner.next();     }
+    numProcesses = scanner.nextInt();
+} while (numProcesses <= 0); 
 
-        System.out.print("Enter the number of processes: ");
-        int numProcesses = scanner.nextInt();
+       // System.out.print("Enter the number of processes: ");
+        //int numProcesses = scanner.nextInt();
         Queue processes = new Queue(numProcesses);
+        List<Process> processList = new ArrayList<>();
+
         for (int i = 0; i < numProcesses; i++) {
             System.out.print("Enter arrival time for Process " + (i + 1) + ": ");
             int arrivalTime = scanner.nextInt();
             System.out.print("Enter burst time for Process " + (i + 1) + ": ");
             int burstTime = scanner.nextInt();
-            Process p = new Process(i + 1, arrivalTime, burstTime);
-            processes.enqueue(p);
+              Process p = new Process(i + 1, arrivalTime, burstTime);
+              p.setOriginalBurstTime(burstTime);
+              processes.enqueue(p);
+              processList.add(new Process(p));
+         
+          
         }
+        int totalTime = PSJF(processes, processList);
+        PerformanceMetrics metrics = new PerformanceMetrics(processList, totalTime);
+        metrics.calculateAndPrintMetrics();
 
-        PSJF(processes);
+       
+
+     //   PSJF(processes);
 /*
         System.out.print("\nNumber of processes= " + numProcesses + " (");
         for (int i = 0; i < numProcesses; i++) {
@@ -37,8 +59,89 @@ public class Main {
         scanner.close();
 
     }
+    
+ public static int PSJF(Queue processes, List<Process> processList) {
+         EventScheduler scheduler = new EventScheduler(processes); //Initialize event scheduler with the queue of processes
+        //save process which their start time = current time in queue 'available'
+        //Queue available = new Queue(processes.size);
+        Queue available = scheduler.getReadyQueue(); //Get ready queue (where processes will be placed when ready to execute)
+        EventScheduler.Event[] eventQueue = scheduler.getEventQueue(); //Get event queue(which stores processes based on arrival time)
+        System.out.println("num of processs: " + processes.size);
 
-    public static void PSJF(Queue processes) {
+        int time = 0;
+
+        Process last = null;
+        Process leastBTprocess;
+        int eventIndex = 0; //Track processed events
+
+     //Skip forward in time to the first arriving process
+    if (eventQueue.length > 0 && eventQueue[0].time > 0) {
+        time = eventQueue[0].time;
+    }
+
+        while (eventIndex < eventQueue.length || available.size != 0) {
+         System.out.println("still proccess in queue");
+        System.out.println("Current time: " + time);
+
+        //Add new arriving processes to the available queue
+        while (eventIndex < eventQueue.length && eventQueue[eventIndex].time == time) {
+        Process newprocess=eventQueue[eventIndex].process; 
+        System.out.println(" processs checked: " + newprocess.getID());
+            available.enqueue(newprocess);
+            System.out.println("Process added to available: " + newprocess.getID());
+            eventIndex++;
+        }
+
+            //if no processes available, skip this iteration and go to time+1
+            if (available.size == 0) {
+                time++;
+                System.out.println("no processs available");
+                continue;
+            }
+
+            //if there some processes available, sort them incrementally according to their burst
+            //time
+            available.sort();
+            System.out.println("there is processes available, sort");
+
+            leastBTprocess = available.getFront();
+            System.out.println("the least burst is: " + leastBTprocess.getID() + ", its BT: " + leastBTprocess.getBurstTime());
+
+            //context switch if recent process differs from previous process
+            if (last != null && leastBTprocess.getID() != last.getID()) {
+                System.out.println("Context switch: ");
+                time++;
+            }
+
+            leastBTprocess.setBurstTime(leastBTprocess.getBurstTime() - 1);
+            System.out.println("burst time after decrementing: " + leastBTprocess.getID() + "its BT: " + leastBTprocess.getBurstTime());
+
+           if (leastBTprocess.getBurstTime() == 0) {
+    available.dequeue();
+    for (Process p : processList) {
+        if (p.getID() == leastBTprocess.getID()) {
+            p.setCompletionTime(time + 1);
+            System.out.println("Process " + p.getID() + " completed at time: " + (time + 1));
+            break;
+        }
+    }
+}
+            last = leastBTprocess;
+            //increment one time unit for processing
+            time++;
+        }
+
+        System.out.println("last time: " + time);
+        return time;
+    }
+
+ 
+
+        
+
+/*
+
+public static void PSJF(Queue processes) {
          EventScheduler scheduler = new EventScheduler(processes); //Initialize event scheduler with the queue of processes
         //save process which their start time = current time in queue 'available'
         //Queue available = new Queue(processes.size);
@@ -97,7 +200,7 @@ public class Main {
                     System.out.println("processs was not added to avaliable: " + process.getID());
                 }
 
-            }*/
+            }
 
             //if no processes available, skip this iteration and go to time+1
             if (available.size == 0) {
@@ -125,7 +228,15 @@ public class Main {
 
             leastBTprocess.setBurstTime(leastBTprocess.getBurstTime() - 1);
             System.out.println("burst time after decrementing: " + leastBTprocess.getID() + "its BT: " + leastBTprocess.getBurstTime());
-
+if (leastBTprocess.getBurstTime() == 0) {
+    available.dequeue();
+    for (Process p : processList) {
+        if (p.getID() == leastBTprocess.getID()) {
+            p.setCompletionTime(time + 1);
+            break;
+        }
+    }
+}
 
             //just when the process burstTime = 0, remove it from available queue
             if (leastBTprocess.getBurstTime() == 0) {
@@ -142,6 +253,6 @@ public class Main {
 
         System.out.println("last time: " + time);
 
-    }
+    } */
 
 }
