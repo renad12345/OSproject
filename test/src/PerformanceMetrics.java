@@ -26,11 +26,12 @@ public class PerformanceMetrics {
             executionTime += p.getOriginalBurstTime();
         }
 
+
 //double avgTurnaroundTime = processes.size() > 0 ? (double) totalTurnaroundTime / processes.size() : 0;
 //double avgWaitingTime = processes.size() > 0 ? (double) totalWaitingTime / processes.size() : 0;
 //double cpuUtilization = totalTime > 0 ? ((double) executionTime / totalTime) * 100 : 0;
 
-      double avgTurnaroundTime = (double) totalTurnaroundTime / processes.size();
+        double avgTurnaroundTime = (double) totalTurnaroundTime / processes.size();
         double avgWaitingTime = (double) totalWaitingTime / processes.size();
         double cpuUtilization = ((double) executionTime / totalTime) * 100;
 

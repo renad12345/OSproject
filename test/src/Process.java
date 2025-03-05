@@ -10,7 +10,7 @@ private int originalBurstTime;
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
         this.completionTime = completionTime;
-        this.originalBurstTime = originalBurstTime;
+        this.originalBurstTime = burstTime;
     }
 
  public Process(int id, int arrivalTime, int burstTime) {
