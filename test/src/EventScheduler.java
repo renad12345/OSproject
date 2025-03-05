@@ -1,37 +1,42 @@
+import java.util.ArrayList;
+
 public class EventScheduler {
-    private Event[] eventQueue;
+    private ArrayList<Event> eventQueue; // Dynamic list for events
     private Queue readyQueue;
     private int currentTime;
     private Process currentProcess;
-    private int eventCount;//track the number of events in the array
 
     public EventScheduler(Queue processes) {
-    int maxSize = processes.size; // Assume the max size is the size of the processes
-     eventQueue = new Event[maxSize]; // Create an array to hold the events
+        eventQueue = new ArrayList<>(); //Use ArrayList for dynamic event storage
         readyQueue = new Queue(processes.size);
         currentTime = 0;
         currentProcess = null;
-         eventCount = 0;
 
-        //move through the queue without dequeuing
-       for (int i = 0; i < maxSize; i++) {
- Process p = processes.arr[i]; // Access process without removing it            
-eventQueue[eventCount++] = new Event(p.getArrivalTime(), p);
-                    }
+// Add processes to eventQueue
+for (int i = 0; i < processes.size; i++) {
+Process p = processes.arr[i];
+int arrivalTime = p.getArrivalTime(); 
+Event newEvent = new Event(arrivalTime, p); //Create a new Event object
+eventQueue.add(newEvent);//Add the event to the eventQueue list
+}
 
-        //Sort events by time in ascending order (simplified sorting)
-        for (int i = 0; i < eventCount; i++) {
-            for (int j = i + 1; j <eventCount; j++) {
-                if (eventQueue[i].time > eventQueue[j].time) {
-                    Event temp = eventQueue[i];
-                    eventQueue[i]=eventQueue[j];
-                    eventQueue[j]=temp;
+        //sorting eventQueue(sorts events by arrival time in ascending order)
+        //finds the smallest event (earliest arrival time) and moves it to its correct position
+        for (int i = 0; i < eventQueue.size() - 1; i++) {
+            int minIndex = i;
+            for (int j = i + 1; j < eventQueue.size(); j++) {
+                if (eventQueue.get(j).time < eventQueue.get(minIndex).time) {
+                    minIndex = j;
                 }
             }
+            //swap the smallest element found with the current element at index i
+            Event temp = eventQueue.get(i);
+            eventQueue.set(i, eventQueue.get(minIndex));
+            eventQueue.set(minIndex, temp);
         }
     }
 
-   public Event[] getEventQueue() {
+    public ArrayList<Event> getEventQueue() {
         return eventQueue;
     }
     
@@ -47,7 +52,7 @@ eventQueue[eventCount++] = new Event(p.getArrivalTime(), p);
         return currentProcess;
     }
 
-    public class Event {
+    public static class Event {
         int time;
         Process process;
 
@@ -57,3 +62,4 @@ eventQueue[eventCount++] = new Event(p.getArrivalTime(), p);
         }
     }
 }
+
