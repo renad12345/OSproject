@@ -19,7 +19,6 @@ public class EventScheduler {
             return p1.getBurstTime() - p2.getBurstTime();
         });
 
-
         ganttChart = new ArrayList<>();
         currentTime = 0;
         statrTime = 0;

@@ -25,7 +25,6 @@ class Process {
         return originalBurstTime;
     }
 
-
     @Override
     public String toString() {
         return "P" + id + ": Arrival Time = " + arrivalTime + ", Burst Time = " + burstTime + "ms";

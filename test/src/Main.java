@@ -52,7 +52,6 @@ public class Main {
         EventScheduler E = new EventScheduler(processes);
         E.schedule();
 
-
         int totalTime = E.getCurrentTime() - E.getStatrTime();
         E.printGanttChart();
 
