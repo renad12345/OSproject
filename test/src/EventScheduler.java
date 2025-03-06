@@ -1,65 +1,143 @@
 import java.util.ArrayList;
+import java.util.List;
+import java.util.PriorityQueue;
 
 public class EventScheduler {
-    private ArrayList<Event> eventQueue; // Dynamic list for events
-    private Queue readyQueue;
+    private PriorityQueue<Event> eventQueue; // Dynamic list for events
+    private PriorityQueue<Process> readyQueue;
     private int currentTime;
     private Process currentProcess;
+    private Event currentCompletedEvent;
+    private int statrTime;
+    private static List<String> ganttChart;
 
-    public EventScheduler(Queue processes) {
-        eventQueue = new ArrayList<>(); //Use ArrayList for dynamic event storage
-        readyQueue = new Queue(processes.size);
+    public EventScheduler(Process[] processes) {
+        eventQueue = new PriorityQueue<>(); // Use ArrayList for dynamic event storage
+        readyQueue = new PriorityQueue<>((p1, p2) -> {
+            if (p1.getBurstTime() == p2.getBurstTime())
+                return p1.getArrivalTime() - p2.getArrivalTime();
+            return p1.getBurstTime() - p2.getBurstTime();
+        });
+
+
+        ganttChart = new ArrayList<>();
         currentTime = 0;
+        statrTime = 0;
         currentProcess = null;
+        currentCompletedEvent = null;
+        int eventCount = processes.length;
 
-// Add processes to eventQueue
-for (int i = 0; i < processes.size; i++) {
-Process p = processes.arr[i];
-int arrivalTime = p.getArrivalTime(); 
-Event newEvent = new Event(arrivalTime, p); //Create a new Event object
-eventQueue.add(newEvent);//Add the event to the eventQueue list
-}
+        //Skip forward in time to the first arriving process
+        if (!eventQueue.isEmpty() && eventQueue.peek().time > 0) {
+            statrTime = eventQueue.peek().time;
+            currentTime = statrTime;
+        }
 
-        //sorting eventQueue(sorts events by arrival time in ascending order)
-        //finds the smallest event (earliest arrival time) and moves it to its correct position
-        for (int i = 0; i < eventQueue.size() - 1; i++) {
-            int minIndex = i;
-            for (int j = i + 1; j < eventQueue.size(); j++) {
-                if (eventQueue.get(j).time < eventQueue.get(minIndex).time) {
-                    minIndex = j;
-                }
-            }
-            //swap the smallest element found with the current element at index i
-            Event temp = eventQueue.get(i);
-            eventQueue.set(i, eventQueue.get(minIndex));
-            eventQueue.set(minIndex, temp);
+
+        for (Process p : processes) {
+            int arrivalTime = p.getArrivalTime();
+            Event newEvent = new Event(arrivalTime, p, "Arrival");
+            eventQueue.add(newEvent);
         }
     }
 
-    public ArrayList<Event> getEventQueue() {
-        return eventQueue;
+    public void schedule() {
+        while (!eventQueue.isEmpty()) {
+            Event event = eventQueue.remove();
+            currentTime = event.time;
+            if (event.status.equals("Arrival"))
+                handleArrivedProcess(event);
+            else if (event.status.equals("Completed"))
+                handleCompletedProcess(event.process);
+        }
+
     }
-    
-    public Queue getReadyQueue() {
-        return readyQueue;
+
+    public void handleArrivedProcess(Event e) {
+        readyQueue.add(e.process);
+
+        if (currentProcess == null || e.process.getBurstTime() < currentProcess.getBurstTime()) {
+            readyQueue.remove(e.process);
+            preempt(currentProcess, e.process);
+        }
+
+    }
+
+    public void preempt(Process runningProcess, Process newProcess) {
+        if (runningProcess != null) {
+            int remaining = runningProcess.getBurstTime() - (currentTime - runningProcess.getStartTime());
+            runningProcess.setBurstTime(remaining);
+            ganttChart.add(runningProcess.getStartTime() + " - " + currentTime + "  P" + runningProcess.getID());
+
+            if (currentCompletedEvent != null) {
+                eventQueue.remove(currentCompletedEvent);
+                currentCompletedEvent = null;
+            }
+
+            // Context switch
+            currentTime++;
+            ganttChart.add((currentTime - 1) + " - " + currentTime + "  " + "CS");
+
+            if (runningProcess.getBurstTime() > 0) {
+                readyQueue.add(runningProcess);
+            }
+        }
+
+        newProcess.setStartTime(currentTime);
+        currentProcess = newProcess;
+
+        currentCompletedEvent = new Event(currentTime + newProcess.getBurstTime(), newProcess, "Completed");
+        eventQueue.add(currentCompletedEvent);
+    }
+
+    public void handleCompletedProcess(Process completedProcess) {
+        completedProcess.setCompletionTime(currentTime);
+        ganttChart.add(completedProcess.getStartTime() + " - " + currentTime + "  P" + completedProcess.getID());
+        currentCompletedEvent = null;
+        currentProcess = null;
+
+
+        if (!readyQueue.isEmpty()) {
+            //context switch if there is processes in ready queue
+            currentTime++;
+            ganttChart.add(currentTime - 1 + " - " + currentTime + "  " + "CS");
+
+
+            Process newProcess = readyQueue.poll();
+            preempt(null, newProcess);
+        }
     }
 
     public int getCurrentTime() {
         return currentTime;
     }
 
-    public Process getCurrentProcess() {
-        return currentProcess;
+    public int getStatrTime() {
+        return statrTime;
     }
 
-    public static class Event {
+    public static void printGanttChart() {
+        System.out.println("Time  Process/CS");
+        for (String row : ganttChart) {
+            System.out.println(row);
+        }
+    }
+
+    public static class Event implements Comparable<Event> {
         int time;
         Process process;
+        String status;
 
-        public Event(int time, Process process) {
+
+        public Event(int time, Process process, String status) {
             this.time = time;
             this.process = process;
+            this.status = status;
+        }
+
+        @Override
+        public int compareTo(Event o) {
+            return this.time - o.time;
         }
     }
 }
-
