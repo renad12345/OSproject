@@ -96,7 +96,6 @@ public class EventScheduler {
         currentCompletedEvent = null;
         currentProcess = null;
 
-
         if (!readyQueue.isEmpty()) {
             //context switch if there is processes in ready queue
             currentTime++;

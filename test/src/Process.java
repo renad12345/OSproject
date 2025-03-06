@@ -14,6 +14,7 @@ class Process {
     }
 
 
+
     public int getCompletionTime() {
         return completionTime;
     }
