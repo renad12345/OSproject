@@ -33,7 +33,6 @@ public class EventScheduler {
             currentTime = statrTime;
         }
 
-
         for (Process p : processes) {
             int arrivalTime = p.getArrivalTime();
             Event newEvent = new Event(arrivalTime, p, "Arrival");

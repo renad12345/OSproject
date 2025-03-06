@@ -39,5 +39,6 @@ public class PerformanceMetrics {
         System.out.printf("Average Waiting Time: %.2f ms\n", avgWaitingTime);
         System.out.printf("CPU Utilization: %.2f%%\n", cpuUtilization);
 
+
     }
 }

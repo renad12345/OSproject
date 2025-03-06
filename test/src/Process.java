@@ -13,8 +13,6 @@ class Process {
         this.originalBurstTime = burstTime;
     }
 
-
-
     public int getCompletionTime() {
         return completionTime;
     }
