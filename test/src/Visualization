@@ -1,0 +1,129 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Queue;
+
+class GanttChartEntry {
+    int startTime;
+    int endTime;
+    String label;  // "P1", "P2", ..., or "CS" (Context Switch)
+
+    public GanttChartEntry(int startTime, int endTime, String label) {
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.label = label;
+    }
+}
+
+class GanttChartPanel extends JPanel {
+    private List<GanttChartEntry> entries;
+    private int totalTime;
+
+    public GanttChartPanel(List<GanttChartEntry> entries) {
+        this.entries = entries;
+        totalTime = entries.isEmpty() ? 0 : entries.get(entries.size() - 1).endTime;
+        setPreferredSize(new Dimension(800, 200));
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        int margin = 50;
+        int panelWidth = getWidth() - 2 * margin;
+        int panelHeight = getHeight() - 2 * margin;
+        double scale = (double) panelWidth / totalTime;
+
+        int x = margin;
+        int y = margin;
+        int rectHeight = panelHeight;
+
+        g.drawLine(margin, y + rectHeight, margin + panelWidth, y + rectHeight);
+
+        for (GanttChartEntry entry : entries) {
+            int segmentWidth = (int) ((entry.endTime - entry.startTime) * scale);
+            g.drawRect(x, y, segmentWidth, rectHeight);
+
+            String text = entry.label;
+            FontMetrics fm = g.getFontMetrics();
+            int textWidth = fm.stringWidth(text);
+            int textHeight = fm.getAscent();
+            int textX = x + (segmentWidth - textWidth) / 2;
+            int textY = y + (rectHeight + textHeight) / 2;
+            g.drawString(text, textX, textY);
+            g.drawString(String.valueOf(entry.startTime), x, y + rectHeight + 15);
+
+            x += segmentWidth;
+        }
+        g.drawString(String.valueOf(totalTime), margin + panelWidth, y + rectHeight + 15);
+    }
+}
+
+public class Visualization {
+    public static void main(String[] args) {
+        Queue readyQueue = new Queue(10); // Assume max size 10, adjust as needed
+        List<GanttChartEntry> entries = simulateProcessExecution(readyQueue);
+
+        JLabel metricsLabel = new JLabel(generatePerformanceMetrics(readyQueue, entries));
+        metricsLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JFrame frame = new JFrame("Process Scheduling - Gantt Chart");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+
+        GanttChartPanel chartPanel = new GanttChartPanel(entries);
+        frame.add(chartPanel, BorderLayout.CENTER);
+
+        JPanel metricsPanel = new JPanel();
+        metricsPanel.add(metricsLabel);
+        frame.add(metricsPanel, BorderLayout.SOUTH);
+
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    }
+
+    private static List<GanttChartEntry> simulateProcessExecution(Queue readyQueue) {
+        List<GanttChartEntry> entries = new ArrayList<>();
+        int currentTime = 0;
+        Process currentProcess = null;
+
+        while (readyQueue.size > 0) {
+            Process nextProcess = readyQueue.dequeue();
+            if (currentProcess != null && currentProcess.getBurstTime() > 0) {
+                entries.add(new GanttChartEntry(currentTime, currentTime + 1, "CS")); // Context Switch
+                currentTime++;
+            }
+
+            int executionTime = nextProcess.getBurstTime();
+            entries.add(new GanttChartEntry(currentTime, currentTime + executionTime, "P" + nextProcess.getID()));
+            currentTime += executionTime;
+            currentProcess = nextProcess;
+        }
+
+        return entries;
+    }
+
+    private static String generatePerformanceMetrics(Queue readyQueue, List<GanttChartEntry> entries) {
+        int totalWaitingTime = 0;
+        int totalTurnaroundTime = 0;
+        int processCount = readyQueue.size;
+        int totalExecutionTime = entries.get(entries.size() - 1).endTime;
+
+        for (int i = 0; i < readyQueue.size; i++) {
+            Process p = readyQueue.arr[i];
+            totalTurnaroundTime += (totalExecutionTime - p.getArrivalTime());
+            totalWaitingTime += (totalExecutionTime - p.getArrivalTime() - p.getBurstTime());
+        }
+
+        double avgTurnaroundTime = (double) totalTurnaroundTime / processCount;
+        double avgWaitingTime = (double) totalWaitingTime / processCount;
+        double cpuUtilization = ((double) totalExecutionTime / (totalExecutionTime + (processCount - 1))) * 100;
+
+        return String.format("<html>Performance Metrics:<br/>" +
+                "Average Turnaround Time: %.2f<br/>" +
+                "Average Waiting Time: %.2f<br/>" +
+                "CPU Utilization: %.2f%%</html>", avgTurnaroundTime, avgWaitingTime, cpuUtilization);
+    }
+}
