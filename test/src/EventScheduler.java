@@ -64,8 +64,13 @@ public class EventScheduler {
     public void preempt(Process runningProcess, Process newProcess) {
         if (runningProcess != null) {
             int remaining = runningProcess.getBurstTime() - (currentTime - runningProcess.getStartTime());
+
+            if(currentTime == runningProcess.getStartTime())
+                System.out.println("here " + runningProcess.getID());
             runningProcess.setBurstTime(remaining);
-            ganttChart.add(runningProcess.getStartTime() + " - " + currentTime + "  P" + runningProcess.getID());
+
+            if(currentTime != runningProcess.getStartTime())
+                ganttChart.add(runningProcess.getStartTime() + " - " + currentTime + "  P" + runningProcess.getID());
 
             if (currentCompletedEvent != null) {
                 eventQueue.remove(currentCompletedEvent);
